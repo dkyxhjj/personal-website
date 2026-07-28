@@ -42,6 +42,13 @@ const experience = [
 
 const projects = [
   {
+    title: "MLB Predictor",
+    href: "https://mlb-predictor.pages.dev/",
+    award: "Step 1 on beating Vegas",
+    description: "full-stack baseball analytics platform that models MLB game scores using historical Statcast data, using feature engineering, probabilistic modeling, and interactive data visualization",
+    tags: ["Linear Regression", "scikit learn", "Statcast"],
+  },
+  {
     title: "Scrubs",
     href: "https://devpost.com/software/scrubs",
     award: "Best use of Zetic · LAHacks 2026",
@@ -75,10 +82,18 @@ const projects = [
 ];
 
 const skills = [
+  "C++",
+  "Bash",
+  "scikit-learn",
+  "Swift",
+  "Docker",
+  "Kubernetes",
+  "Git",
+  "Pyspark",
+  "Airflow",
   "TypeScript",
   "Python",
   "R",
-  "Swift",
   "Next.js",
   "React",
   "Node",
@@ -87,13 +102,13 @@ const skills = [
   "pandas",
   "PyTorch",
   "SQL",
-  "DuckDB",
 ];
 
 const elsewhere = [
   ["GitHub", "https://github.com/dkyxhjj"],
   ["LinkedIn", "https://www.linkedin.com/in/chengtai/"],
   ["Email", "mailto:richardli.060411@gmail.com"],
+
 ];
 
 export default function Profile() {
