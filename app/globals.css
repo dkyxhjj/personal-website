@@ -308,6 +308,81 @@ a {
   color: var(--accent);
 }
 
+.post-excerpt {
+  display: block;
+  margin-top: 0.5rem;
+  font-family: var(--font-body), Georgia, serif;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+/* single blog post */
+.back-link {
+  display: inline-block;
+  margin-bottom: 2rem;
+  color: var(--muted);
+  transition: color 0.18s ease;
+}
+
+.back-link:hover {
+  color: var(--accent);
+}
+
+.page > .post-date {
+  margin-bottom: 0.9rem;
+}
+
+.post-body h2 {
+  margin-top: 2.8rem;
+}
+
+.post-subtitle {
+  margin: -0.6rem 0 2rem;
+  font-style: italic;
+  font-size: 1.1rem;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.post-figure {
+  margin: 2.2rem 0 2rem;
+}
+
+.post-figure img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+}
+
+.post-figure figcaption {
+  margin-top: 0.75rem;
+  font-family: var(--font-body), Georgia, serif;
+  font-size: 0.88rem;
+  line-height: 1.55;
+  color: var(--muted);
+}
+
+.post-list-block {
+  margin: 0 0 1.15rem;
+  padding-left: 1.4rem;
+}
+
+.post-list-block li {
+  margin-bottom: 0.8rem;
+  line-height: 1.55;
+}
+
+.post-list-block li::marker {
+  color: var(--accent);
+}
+
+.post-body .fact-list {
+  margin: 1.6rem 0 1.6rem;
+}
+
 /* skills marquee */
 .skills-marquee {
   margin-top: 1.6rem;

@@ -1,21 +1,12 @@
 import type { Metadata } from "next";
-import { posts } from "@/lib/posts";
+import Link from "next/link";
+import { posts, formatPostDate } from "@/lib/posts";
 
 export const metadata: Metadata = {
   title: "Blog",
   description:
     "Notes from Richard Li on statistics, building web and mobile apps, and poker analytics.",
 };
-
-const MONTHS = [
-  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
-];
-
-function formatDate(iso: string) {
-  const [y, m, d] = iso.split("-").map(Number);
-  return `${MONTHS[m - 1]} ${d}, ${y}`;
-}
 
 export default function Blog() {
   return (
@@ -30,12 +21,14 @@ export default function Blog() {
         <div className="empty-state mono-label">Coming soon</div>
       ) : (
         <ul className="post-list">
-          {posts.map((post) => (
+          {posts.map((post) => 
+          (
             <li key={post.slug}>
-              <a href="#">
-                <span className="post-date mono-label">{formatDate(post.date)}</span>
+              <Link href={`/blog/${post.slug}`}>
+                <span className="post-date mono-label">{formatPostDate(post.date)}</span>
                 <span className="post-title">{post.title}</span>
-              </a>
+                <span className="post-excerpt">{post.excerpt}</span>
+              </Link>
             </li>
           ))}
         </ul>
