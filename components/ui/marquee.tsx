@@ -129,6 +129,7 @@ export function Marquee({
             <div
               key={`second-${index}`}
               className={cn("flex shrink-0", isVertical && "w-full")}
+              aria-hidden="true"
             >
               {item}
             </div>

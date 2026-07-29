@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Instrument_Serif, Newsreader, IBM_Plex_Mono } from "next/font/google";
 import Rail from "./components/Rail";
+import MeshGradient from "./components/MeshGradient";
 import "./globals.css";
 
 const display = Instrument_Serif({
@@ -47,6 +48,7 @@ export default function RootLayout({
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
       <body>
+        <MeshGradient variant="page" />
         <a href="#main" className="skip-link">
           Skip to content
         </a>

@@ -46,6 +46,13 @@ body {
   transition: background-color 0.25s ease, color 0.25s ease;
 }
 
+/* MeshGradient (fixed, z-index:-1) is only tuned for dark backdrops, so it
+   only replaces the body background outside of light theme; data-theme
+   lives on <html>, not <body>, hence the ancestor selector. */
+html:not([data-theme="light"]) body {
+  background-color: transparent;
+}
+
 ::selection {
   background: var(--accent);
   color: var(--bg);
