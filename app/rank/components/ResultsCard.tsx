@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { toPng } from "html-to-image";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { toBlob } from "html-to-image";
 import type { Album } from "../data/albums";
 import type { Tier } from "./TierSort";
 
@@ -75,9 +75,16 @@ export default function ResultsCard({
   const buttonRef = useRef<HTMLButtonElement>(null);
 
   const [scale, setScale] = useState(1);
-  const [saving, setSaving] = useState(false);
   const [heroCoverSize, setHeroCoverSize] = useState<number | null>(null);
   const [gridCoverSize, setGridCoverSize] = useState<number | null>(null);
+
+  // The generated PNG is cached in a ref (not state) so the tap handler can call
+  // navigator.share() with zero awaits before it - iOS drops the user-gesture context
+  // otherwise and rejects share() with NotAllowedError.
+  const blobRef = useRef<Blob | null>(null);
+  const generateStartedRef = useRef(false);
+  const [status, setStatus] = useState("generating");
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
   const top = ranked[0];
   // Only ranks 2-5 are displayed.
@@ -167,23 +174,72 @@ export default function ResultsCard({
     }
   }, [heroCoverSize, gridCoverSize, ranked, ratings]);
 
-  const handleSave = async () => {
-    if (!posterRef.current) return;
-    setSaving(true);
+  // Generate the poster as soon as the layout math above has produced real cover sizes
+  // (not on tap) so the tap handler below can share the already-cached blob synchronously.
+  const generatePoster = useCallback(async () => {
+    // status starts at "generating" (initial state below); no setState here so the
+    // effect that kicks this off doesn't synchronously trigger a render.
     try {
+      const poster = posterRef.current;
+      if (!poster) throw new Error("poster ref not attached");
+
       await document.fonts.ready;
-      const dataUrl = await toPng(posterRef.current, {
+      const blob = await toBlob(poster, {
         pixelRatio: 2,
         width: POSTER_WIDTH,
         height: POSTER_HEIGHT,
       });
-      const link = document.createElement("a");
-      link.download = "drake-albums-ranked.png";
-      link.href = dataUrl;
-      link.click();
-    } finally {
-      setSaving(false);
+      if (!blob) throw new Error("toBlob returned null");
+
+      blobRef.current = blob;
+      setPreviewUrl(URL.createObjectURL(blob));
+      setStatus(`generated, ${Math.round(blob.size / 1024)} KB`);
+    } catch (err) {
+      const e = err instanceof Error ? err : new Error(String(err));
+      setStatus(`failed: ${e.name}: ${e.message}`);
     }
+  }, []);
+
+  useEffect(() => {
+    if (generateStartedRef.current) return;
+    if (heroCoverSize === null || gridCoverSize === null) return;
+    generateStartedRef.current = true;
+    generatePoster();
+  }, [heroCoverSize, gridCoverSize, generatePoster]);
+
+  const handleSave = () => {
+    const blob = blobRef.current;
+    if (!blob) return;
+
+    const file = new File([blob], "drake-albums-ranked.png", { type: "image/png" });
+    const canShareFiles =
+      typeof navigator.canShare === "function" && navigator.canShare({ files: [file] });
+
+    // Must be synchronous up to here - no awaits before share() - or iOS drops the
+    // user-gesture context and rejects with NotAllowedError.
+    if (typeof navigator.share === "function" && canShareFiles) {
+      setStatus(`sharing (canShare: ${canShareFiles})`);
+      navigator
+        .share({ files: [file], title: "My Drake Albums Ranked" })
+        .then(() => setStatus("done"))
+        .catch((err: unknown) => {
+          const e = err instanceof Error ? err : new Error(String(err));
+          setStatus(`failed: ${e.name}: ${e.message}`);
+        });
+      return;
+    }
+
+    // Desktop / no file-share support: existing anchor-download path. The preview
+    // <img> below the button is the guaranteed fallback (long-press to save) for any
+    // mobile browser where neither share nor download works.
+    setStatus(`share unsupported (canShare: ${canShareFiles}) - downloading`);
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.download = "drake-albums-ranked.png";
+    link.href = url;
+    link.click();
+    URL.revokeObjectURL(url);
+    setStatus("done");
   };
 
   const year = new Date().getFullYear();
@@ -309,11 +365,31 @@ export default function ResultsCard({
       <button
         ref={buttonRef}
         onClick={handleSave}
-        disabled={saving}
+        disabled={!previewUrl}
         className="rounded-full bg-white px-8 py-3 text-sm font-semibold text-black transition-colors duration-150 hover:bg-white/85 disabled:opacity-50"
       >
-        {saving ? "Saving…" : "Save as image"}
+        Save as image
       </button>
+
+      <p className="max-w-xs text-center font-[family-name:var(--font-mono)] text-[11px] tracking-widest text-white/50">
+        {status}
+      </p>
+
+      {previewUrl && (
+        <div className="flex flex-col items-center gap-2">
+          {/* Guaranteed fallback: works with zero platform APIs. Always rendered once the
+              poster is generated, regardless of whether share/download succeeds above. */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={previewUrl}
+            alt="Generated poster preview"
+            className="w-36 rounded-lg border border-white/10"
+          />
+          <p className="max-w-xs text-center font-[family-name:var(--font-mono)] text-[11px] tracking-widest text-white/40">
+            Long-press the image above to save it to Photos
+          </p>
+        </div>
+      )}
     </div>
   );
 }
