@@ -1,8 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Reorder } from "framer-motion";
+import { Reorder, useDragControls, type PanInfo } from "framer-motion";
 import type { Album } from "../data/albums";
+import type { PointerEvent as ReactPointerEvent } from "react";
 
 const AUTOSCROLL_EDGE_PX = 60;
 const AUTOSCROLL_MAX_SPEED = 14;
@@ -29,13 +30,69 @@ function CoverThumb({ album }: { album: Album }) {
   );
 }
 
-function GripDots() {
+function GripDots({ onPointerDown }: { onPointerDown?: (e: ReactPointerEvent) => void }) {
   return (
-    <div className="grid shrink-0 grid-cols-2 gap-[3px] px-0.5">
+    // touch-none is scoped to just the handle: the rest of the row must stay scrollable.
+    <div
+      onPointerDown={onPointerDown}
+      className="grid shrink-0 touch-none grid-cols-2 gap-[3px] px-0.5"
+    >
       {Array.from({ length: 6 }).map((_, i) => (
         <span key={i} className="h-[3px] w-[3px] rounded-full bg-white/20" />
       ))}
     </div>
+  );
+}
+
+function AlbumRow({
+  album,
+  rank,
+  rating,
+  showDivider,
+  onDragStart,
+  onDrag,
+  onDragEnd,
+}: {
+  album: Album;
+  rank: number;
+  rating: number | undefined;
+  showDivider: boolean;
+  onDragStart: (event: PointerEvent | MouseEvent | TouchEvent, info: PanInfo) => void;
+  onDrag: (event: PointerEvent | MouseEvent | TouchEvent, info: PanInfo) => void;
+  onDragEnd: () => void;
+}) {
+  const dragControls = useDragControls();
+  return (
+    <Reorder.Item
+      as="div"
+      value={album}
+      dragListener={false}
+      dragControls={dragControls}
+      onDragStart={onDragStart}
+      onDrag={onDrag}
+      onDragEnd={onDragEnd}
+      whileDrag={{ scale: 1.03, boxShadow: "0 8px 24px rgba(0,0,0,0.5)" }}
+      transition={{ duration: 0.18 }}
+    >
+      {showDivider && (
+        <div className="mt-2 mb-1 flex items-center gap-2 px-1 font-[family-name:var(--font-mono)] text-[10px] tracking-widest text-[#d4af37]/70">
+          <span>{rating}/10</span>
+          <span className="h-px flex-1 bg-white/10" />
+        </div>
+      )}
+      <div className="flex items-center gap-2.5 rounded-lg border border-white/5 bg-white/[0.04] px-2 py-1 transition-colors duration-150 hover:bg-white/[0.07] sm:px-2.5 sm:py-1.5">
+        <GripDots onPointerDown={(e) => dragControls.start(e)} />
+        <span
+          className={`w-5 shrink-0 text-right font-[family-name:var(--font-mono)] text-xs ${
+            rank <= 3 ? "text-[#d4af37]" : "text-white/40"
+          }`}
+        >
+          {rank}
+        </span>
+        <CoverThumb album={album} />
+        <span className="min-w-0 flex-1 truncate text-sm">{album.title}</span>
+      </div>
+    </Reorder.Item>
   );
 }
 
@@ -104,12 +161,12 @@ export default function TierDrag({
 
   useEffect(() => stopAutoScroll, [stopAutoScroll]);
 
-  const handleDragStart = (_: unknown, info: { point: { y: number } }) => {
+  const handleDragStart = (_: PointerEvent | MouseEvent | TouchEvent, info: PanInfo) => {
     pointerYRef.current = info.point.y;
     startAutoScroll();
   };
 
-  const handleDrag = (_: unknown, info: { point: { y: number } }) => {
+  const handleDrag = (_: PointerEvent | MouseEvent | TouchEvent, info: PanInfo) => {
     pointerYRef.current = info.point.y;
   };
 
@@ -158,36 +215,16 @@ export default function TierDrag({
             const showDivider = i === 0 || rating !== prevRating;
             const rank = ranks.get(album.id) ?? 0;
             return (
-              <Reorder.Item
+              <AlbumRow
                 key={album.id}
-                as="div"
-                value={album}
-                style={{ touchAction: "none" }}
+                album={album}
+                rank={rank}
+                rating={rating}
+                showDivider={showDivider}
                 onDragStart={handleDragStart}
                 onDrag={handleDrag}
                 onDragEnd={() => handleDragEnd(album.id)}
-                whileDrag={{ scale: 1.03, boxShadow: "0 8px 24px rgba(0,0,0,0.5)" }}
-                transition={{ duration: 0.18 }}
-              >
-                {showDivider && (
-                  <div className="mt-2 mb-1 flex items-center gap-2 px-1 font-[family-name:var(--font-mono)] text-[10px] tracking-widest text-[#d4af37]/70">
-                    <span>{rating}/10</span>
-                    <span className="h-px flex-1 bg-white/10" />
-                  </div>
-                )}
-                <div className="flex items-center gap-2.5 rounded-lg border border-white/5 bg-white/[0.04] px-2 py-1 transition-colors duration-150 hover:bg-white/[0.07] sm:px-2.5 sm:py-1.5">
-                  <GripDots />
-                  <span
-                    className={`w-5 shrink-0 text-right font-[family-name:var(--font-mono)] text-xs ${
-                      rank <= 3 ? "text-[#d4af37]" : "text-white/40"
-                    }`}
-                  >
-                    {rank}
-                  </span>
-                  <CoverThumb album={album} />
-                  <span className="min-w-0 flex-1 truncate text-sm">{album.title}</span>
-                </div>
-              </Reorder.Item>
+              />
             );
           })}
         </Reorder.Group>
