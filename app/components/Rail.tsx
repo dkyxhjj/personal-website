@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import ThemeToggle from "./ThemeToggle";
 
 const nav = [
   {
@@ -66,6 +65,27 @@ const nav = [
       </svg>
     ),
   },
+  {
+    href: "/rank",
+    label: "Drake Ranker",
+    icon: (
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.7"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        width="24"
+        height="24"
+        aria-hidden="true"
+      >
+        <path d="M4 18h4v-5H4z" />
+        <path d="M10 18h4v-9h-4z" />
+        <path d="M16 18h4V6h-4z" />
+      </svg>
+    ),
+  },
 ];
 
 export default function Rail() {
@@ -93,8 +113,6 @@ export default function Rail() {
           </Link>
         );
       })}
-      <span className="rail-spacer" aria-hidden="true" />
-      <ThemeToggle />
     </nav>
   );
 }

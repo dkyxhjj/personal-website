@@ -14,16 +14,6 @@
   --rail-w: 96px;
 }
 
-[data-theme="light"] {
-  --bg: #eceee9;
-  --bg-raise: #ffffff;
-  --text: #171a18;
-  --muted: #5d655c;
-  --line: rgba(23, 26, 24, 0.12);
-  --accent: #a83a30;
-  --accent-2: #cf7a35;
-}
-
 /* ---- Base ---- */
 * {
   box-sizing: border-box;
@@ -36,21 +26,13 @@ html {
 body {
   margin: 0;
   min-height: 100%;
-  background-color: var(--bg);
+  background-color: transparent;
   color: var(--text);
   font-family: var(--font-body), Georgia, serif;
   font-size: 19px;
   line-height: 1.62;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
-  transition: background-color 0.25s ease, color 0.25s ease;
-}
-
-/* MeshGradient (fixed, z-index:-1) is only tuned for dark backdrops, so it
-   only replaces the body background outside of light theme; data-theme
-   lives on <html>, not <body>, hence the ancestor selector. */
-html:not([data-theme="light"]) body {
-  background-color: transparent;
 }
 
 ::selection {

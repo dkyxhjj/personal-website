@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Instrument_Serif, Newsreader, IBM_Plex_Mono } from "next/font/google";
 import Rail from "./components/Rail";
-import MeshGradient from "./components/MeshGradient";
 import "./globals.css";
 
 const display = Instrument_Serif({
@@ -30,9 +29,6 @@ export const metadata: Metadata = {
     "Richard Li — UCLA statistics and data science student building web and mobile apps and poker analytics.",
 };
 
-// Sets data-theme before first paint so there is no flash of the wrong theme.
-const themeScript = `(function(){try{var t=localStorage.getItem('theme');if(!t){t=window.matchMedia('(prefers-color-scheme: light)').matches?'light':'dark';}document.documentElement.setAttribute('data-theme',t);}catch(e){document.documentElement.setAttribute('data-theme','dark');}})();`;
-
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -42,13 +38,20 @@ export default function RootLayout({
     <html
       lang="en"
       className={`${display.variable} ${body.variable} ${mono.variable}`}
-      suppressHydrationWarning
     >
-      <head>
-        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
-      </head>
       <body>
-        <MeshGradient variant="page" />
+        <div
+          aria-hidden
+          className="fixed inset-0 -z-10"
+          style={{
+            backgroundImage: "url(/background/toronto-bg.jpg)",
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            filter: "blur(14px) saturate(0.7)",
+            transform: "scale(1.08)",
+          }}
+        />
+        <div aria-hidden className="fixed inset-0 -z-10 bg-black/75" />
         <a href="#main" className="skip-link">
           Skip to content
         </a>
