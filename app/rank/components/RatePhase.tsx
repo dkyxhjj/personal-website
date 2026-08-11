@@ -82,7 +82,9 @@ export default function RatePhase({
   const progress = (index / ordered.length) * 100;
 
   return (
-    <div className="relative flex min-h-screen w-full flex-col items-center justify-center gap-10 bg-transparent px-6 text-white">
+    // 67px = mobile .rail height (46px btn + 2*0.6rem padding + 1px border, app/globals.css);
+    // the rail is a fixed bottom bar below the 899px breakpoint and overlays the viewport.
+    <div className="relative flex h-dvh w-full flex-col items-center justify-center gap-6 overflow-y-auto bg-transparent px-4 text-white max-[899px]:h-[calc(100dvh_-_67px_-_env(safe-area-inset-bottom))] sm:gap-10 sm:px-6">
       <div className="fixed inset-x-0 top-0 h-[2px] bg-white/[0.06]">
         <div
           className="h-full bg-[#d4af37] transition-[width] duration-300 ease-out"
@@ -104,19 +106,19 @@ export default function RatePhase({
         >
           <CoverImage
             album={current}
-            className="aspect-square w-64 rounded-xl shadow-2xl shadow-black/60 ring-1 ring-white/10 sm:w-72"
+            className="aspect-square w-40 rounded-xl shadow-2xl shadow-black/60 ring-1 ring-white/10 sm:w-72"
           />
-          <h1 className="max-w-md text-center font-[family-name:var(--font-display)] text-3xl leading-tight sm:text-4xl">
+          <h1 className="max-w-md text-center font-[family-name:var(--font-display)] text-xl leading-tight sm:text-4xl">
             {current.title}
           </h1>
 
           <div className="flex flex-col items-center gap-2.5">
-            <div className="flex flex-wrap justify-center gap-2">
+            <div className="flex flex-nowrap justify-center gap-0.5 sm:flex-wrap sm:gap-2">
               {SCORES.map((score) => (
                 <button
                   key={score}
                   onClick={() => handleRate(score)}
-                  className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/[0.03] font-[family-name:var(--font-mono)] text-sm text-white/80 transition-all duration-150 hover:border-[#d4af37]/60 hover:bg-[#d4af37]/10 hover:text-[#d4af37] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d4af37]"
+                  className="flex h-7 w-7 items-center justify-center rounded-full border border-white/10 bg-white/[0.03] font-[family-name:var(--font-mono)] text-[10px] text-white/80 transition-all duration-150 hover:border-[#d4af37]/60 hover:bg-[#d4af37]/10 hover:text-[#d4af37] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d4af37] sm:h-10 sm:w-10 sm:text-sm"
                 >
                   {score}
                 </button>

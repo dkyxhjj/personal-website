@@ -16,12 +16,12 @@ function CoverThumb({ album }: { album: Album }) {
         alt={album.title}
         width={36}
         height={36}
-        className="h-9 w-9 shrink-0 rounded-md object-cover"
+        className="h-7 w-7 shrink-0 rounded-md object-cover sm:h-9 sm:w-9"
       />
     );
   }
   return (
-    <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-md bg-zinc-800 text-center">
+    <div className="flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded-md bg-zinc-800 text-center sm:h-9 sm:w-9">
       <span className="line-clamp-2 text-[7px] font-medium leading-tight text-zinc-300">
         {album.title}
       </span>
@@ -133,10 +133,12 @@ export default function TierDrag({
   order.forEach((album, i) => ranks.set(album.id, i + 1));
 
   return (
-    <div className="flex h-dvh w-full flex-col gap-3 overflow-hidden bg-transparent px-6 py-5 text-white">
+    // 67px = mobile .rail height (46px btn + 2*0.6rem padding + 1px border, app/globals.css);
+    // the rail is a fixed bottom bar below the 899px breakpoint and overlays the viewport.
+    <div className="flex h-dvh w-full flex-col gap-3 overflow-hidden bg-transparent px-6 py-5 text-white max-[899px]:h-[calc(100dvh_-_67px_-_env(safe-area-inset-bottom))]">
       <div className="shrink-0 text-center">
-        <h1 className="font-[family-name:var(--font-display)] text-2xl">Drag to break ties</h1>
-        <p className="mt-1 font-[family-name:var(--font-mono)] text-[11px] tracking-widest text-white/30">
+        <h1 className="font-[family-name:var(--font-display)] text-xl sm:text-2xl">Drag to break ties</h1>
+        <p className="mt-1 hidden font-[family-name:var(--font-mono)] text-[11px] tracking-widest text-white/30 sm:block">
           REORDER WITHIN EACH RATING BAND
         </p>
       </div>
@@ -173,7 +175,7 @@ export default function TierDrag({
                     <span className="h-px flex-1 bg-white/10" />
                   </div>
                 )}
-                <div className="flex items-center gap-2.5 rounded-lg border border-white/5 bg-white/[0.04] px-2.5 py-1.5 transition-colors duration-150 hover:bg-white/[0.07]">
+                <div className="flex items-center gap-2.5 rounded-lg border border-white/5 bg-white/[0.04] px-2 py-1 transition-colors duration-150 hover:bg-white/[0.07] sm:px-2.5 sm:py-1.5">
                   <GripDots />
                   <span
                     className={`w-5 shrink-0 text-right font-[family-name:var(--font-mono)] text-xs ${
@@ -183,7 +185,7 @@ export default function TierDrag({
                     {rank}
                   </span>
                   <CoverThumb album={album} />
-                  <span className="truncate text-sm">{album.title}</span>
+                  <span className="min-w-0 flex-1 truncate text-sm">{album.title}</span>
                 </div>
               </Reorder.Item>
             );
