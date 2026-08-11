@@ -14,17 +14,27 @@ function CoverThumb({ album }: { album: Album }) {
       <img
         src={album.cover}
         alt={album.title}
-        width={32}
-        height={32}
-        className="h-8 w-8 shrink-0 rounded object-cover"
+        width={36}
+        height={36}
+        className="h-9 w-9 shrink-0 rounded-md object-cover"
       />
     );
   }
   return (
-    <div className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded bg-zinc-800 text-center">
-      <span className="line-clamp-2 text-[6px] font-medium leading-tight text-zinc-300">
+    <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-md bg-zinc-800 text-center">
+      <span className="line-clamp-2 text-[7px] font-medium leading-tight text-zinc-300">
         {album.title}
       </span>
+    </div>
+  );
+}
+
+function GripDots() {
+  return (
+    <div className="grid shrink-0 grid-cols-2 gap-[3px] px-0.5">
+      {Array.from({ length: 6 }).map((_, i) => (
+        <span key={i} className="h-[3px] w-[3px] rounded-full bg-white/20" />
+      ))}
     </div>
   );
 }
@@ -123,8 +133,13 @@ export default function TierDrag({
   order.forEach((album, i) => ranks.set(album.id, i + 1));
 
   return (
-    <div className="flex h-dvh w-full flex-col gap-2 overflow-hidden bg-transparent px-6 py-4 text-white">
-      <h1 className="shrink-0 text-center text-lg font-semibold">Drag to break ties</h1>
+    <div className="flex h-dvh w-full flex-col gap-3 overflow-hidden bg-transparent px-6 py-5 text-white">
+      <div className="shrink-0 text-center">
+        <h1 className="font-[family-name:var(--font-display)] text-2xl">Drag to break ties</h1>
+        <p className="mt-1 font-[family-name:var(--font-mono)] text-[11px] tracking-widest text-white/30">
+          REORDER WITHIN EACH RATING BAND
+        </p>
+      </div>
 
       <div className="relative min-h-0 flex-1">
         <Reorder.Group
@@ -133,12 +148,13 @@ export default function TierDrag({
           values={order}
           onReorder={handleReorder}
           ref={scrollRef}
-          className="flex h-full flex-col overflow-y-auto"
+          className="flex h-full flex-col gap-1 overflow-y-auto py-1"
         >
           {order.map((album, i) => {
             const rating = liveRatings[album.id];
             const prevRating = i > 0 ? liveRatings[order[i - 1].id] : undefined;
             const showDivider = i === 0 || rating !== prevRating;
+            const rank = ranks.get(album.id) ?? 0;
             return (
               <Reorder.Item
                 key={album.id}
@@ -152,17 +168,22 @@ export default function TierDrag({
                 transition={{ duration: 0.18 }}
               >
                 {showDivider && (
-                  <div className="mt-1 flex items-center gap-2 px-0.5 text-[9px] font-semibold uppercase tracking-widest text-white/30">
-                    <span>{rating}</span>
+                  <div className="mt-2 mb-1 flex items-center gap-2 px-1 font-[family-name:var(--font-mono)] text-[10px] tracking-widest text-[#d4af37]/70">
+                    <span>{rating}/10</span>
                     <span className="h-px flex-1 bg-white/10" />
                   </div>
                 )}
-                <div className="mt-0.5 flex items-center gap-2 rounded-md bg-white/5 px-1.5 py-0.5">
-                  <span className="w-4 shrink-0 text-right text-[10px] text-white/40">
-                    {ranks.get(album.id)}
+                <div className="flex items-center gap-2.5 rounded-lg border border-white/5 bg-white/[0.04] px-2.5 py-1.5 transition-colors duration-150 hover:bg-white/[0.07]">
+                  <GripDots />
+                  <span
+                    className={`w-5 shrink-0 text-right font-[family-name:var(--font-mono)] text-xs ${
+                      rank <= 3 ? "text-[#d4af37]" : "text-white/40"
+                    }`}
+                  >
+                    {rank}
                   </span>
                   <CoverThumb album={album} />
-                  <span className="truncate text-[11px]">{album.title}</span>
+                  <span className="truncate text-sm">{album.title}</span>
                 </div>
               </Reorder.Item>
             );

@@ -4,7 +4,6 @@ import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { toPng } from "html-to-image";
 import type { Album } from "../data/albums";
 import type { Tier } from "./TierSort";
-import { kendallTauB, verdict } from "../lib/correlation";
 
 const POSTER_WIDTH = 1080;
 const POSTER_HEIGHT = 1920;
@@ -12,10 +11,9 @@ const POSTER_HEIGHT = 1920;
 // Must match the Tailwind utilities used below (mt-16, mt-6, mt-3, mt-1, gap-10) so the
 // layout-effect math lines up with what actually renders.
 const SECTION_GAP = 64; // mt-16, before the hero and before the grid
-const TAU_GAP = 24; // mt-6, grid -> tau
-const FOOTER_GAP = 24; // mt-6, tau -> footer
+const FOOTER_GAP = 24; // mt-6, grid -> footer
 const HERO_TITLE_GAP = 24; // mt-6, hero cover -> title
-const HERO_RATING_GAP = 4; // mt-1, hero title -> rating
+const HERO_RATING_GAP = 8; // mt-2, hero title -> rating
 const GRID_GAP = 40; // gap-10, both between the two grid rows and between the two columns
 const GRID_COLS = 2; // ranks 2-5 as a 2x2 grid
 
@@ -73,7 +71,6 @@ export default function ResultsCard({
   const heroRatingRef = useRef<HTMLParagraphElement>(null);
   const gridRef = useRef<HTMLDivElement>(null);
   const firstCaptionRef = useRef<HTMLDivElement>(null);
-  const tauRef = useRef<HTMLDivElement>(null);
   const footerRef = useRef<HTMLElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
 
@@ -83,8 +80,7 @@ export default function ResultsCard({
   const [gridCoverSize, setGridCoverSize] = useState<number | null>(null);
 
   const top = ranked[0];
-  // Only ranks 2-5 are displayed. The tau line below still scores the full `ranked`
-  // array (all 18), not this display-only slice.
+  // Only ranks 2-5 are displayed.
   const gridAlbums = ranked.slice(1, 5);
   const gridRows = Math.ceil(gridAlbums.length / GRID_COLS);
 
@@ -113,9 +109,8 @@ export default function ResultsCard({
     const heroRating = heroRatingRef.current;
     const grid = gridRef.current;
     const caption = firstCaptionRef.current;
-    const tau = tauRef.current;
     const footer = footerRef.current;
-    if (!poster || !header || !heroTitle || !heroRating || !grid || !caption || !tau || !footer) {
+    if (!poster || !header || !heroTitle || !heroRating || !grid || !caption || !footer) {
       return;
     }
 
@@ -133,8 +128,6 @@ export default function ResultsCard({
       SECTION_GAP + // before grid
       GRID_GAP * (gridRows - 1) +
       caption.offsetHeight * gridRows +
-      TAU_GAP +
-      tau.offsetHeight +
       FOOTER_GAP +
       footer.offsetHeight +
       paddingBottom;
@@ -194,10 +187,6 @@ export default function ResultsCard({
   };
 
   const year = new Date().getFullYear();
-  // Kendall's tau is computed on the full ranked list (all 18), never the top-5 slice
-  // shown on the poster.
-  const tau = kendallTauB(ranked);
-  const verdictText = verdict(tau);
 
   return (
     <div className="flex min-h-screen w-full flex-col items-center gap-6 bg-transparent py-10 text-white">
@@ -213,20 +202,42 @@ export default function ResultsCard({
           <div
             ref={posterRef}
             style={{ width: POSTER_WIDTH, height: POSTER_HEIGHT }}
-            className="relative flex flex-col overflow-hidden bg-black px-16 py-20"
+            className="relative isolate flex flex-col overflow-hidden bg-black px-16 py-20"
           >
             <div
               aria-hidden
-              className="absolute inset-0 -z-10"
+              className="absolute inset-0 -z-20"
               style={{
                 backgroundImage: "url(/background/toronto-bg.jpg)",
                 backgroundSize: "cover",
                 backgroundPosition: "center",
-                filter: "blur(14px) saturate(0.7)",
+                filter: "blur(10px) saturate(0.9)",
                 transform: "scale(1.08)",
               }}
             />
-            <div aria-hidden className="absolute inset-0 -z-10 bg-black/75" />
+            <div
+              aria-hidden
+              className="absolute inset-0 -z-10"
+              style={{
+                backgroundImage: "url(/background/drakebg.jpg)",
+                backgroundSize: "cover",
+                backgroundPosition: "center 20%",
+                filter: "blur(10px) saturate(1.1)",
+                transform: "scale(1.08)",
+                WebkitMaskImage:
+                  "linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 38%, rgba(0,0,0,0) 78%)",
+                maskImage:
+                  "linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 38%, rgba(0,0,0,0) 78%)",
+              }}
+            />
+            <div
+              aria-hidden
+              className="absolute inset-0 -z-10"
+              style={{
+                background:
+                  "linear-gradient(to bottom, rgba(0,0,0,0.82) 0%, rgba(0,0,0,0.42) 22%, rgba(0,0,0,0.48) 68%, rgba(0,0,0,0.88) 100%)",
+              }}
+            />
 
             <div ref={contentRef}>
               <header ref={headerRef} className="text-center">
@@ -245,17 +256,20 @@ export default function ResultsCard({
                     style={heroCoverSize !== null ? { width: heroCoverSize } : undefined}
                   >
                     <CoverBlock album={top} sizePx={heroCoverSize ?? undefined} />
-                    <div className="absolute -left-6 -top-6 flex h-20 w-20 items-center justify-center rounded-full bg-[#d4af37] text-3xl font-black text-black">
+                    <div className="absolute -left-6 -top-6 flex h-20 w-20 items-center justify-center rounded-full bg-[#d4af37] text-3xl font-black text-black shadow-[0_8px_24px_rgba(0,0,0,0.55)] ring-4 ring-black/40">
                       01
                     </div>
                   </div>
                   <p
                     ref={heroTitleRef}
-                    className="mt-6 max-w-[80%] text-center text-3xl font-bold"
+                    className="mt-6 max-w-[85%] text-center text-5xl font-bold leading-tight"
                   >
                     {top.title}
                   </p>
-                  <p ref={heroRatingRef} className="mt-1 text-center text-sm text-white/40">
+                  <p
+                    ref={heroRatingRef}
+                    className="mt-2 text-center font-[family-name:var(--font-mono)] text-xl text-white/55"
+                  >
                     {ratings[top.id]}/10
                   </p>
                 </div>
@@ -269,13 +283,13 @@ export default function ResultsCard({
                     <div key={album.id} className="flex flex-col items-center">
                       <CoverBlock album={album} sizePx={gridCoverSize ?? undefined} />
                       <div ref={i === 0 ? firstCaptionRef : undefined}>
-                        <p className={`mt-3 text-2xl font-bold ${numberColor}`}>
-                          {i + 2}{" "}
-                          <span className="text-sm font-normal text-white/40">
+                        <p className={`mt-3 text-center text-4xl font-bold ${numberColor}`}>
+                          {i + 2}
+                          <span className="ml-2 font-[family-name:var(--font-mono)] text-lg font-normal text-white/45">
                             {ratings[album.id]}/10
                           </span>
                         </p>
-                        <p className="mt-1 max-w-full truncate text-center text-xl font-medium">
+                        <p className="mt-1.5 max-w-full truncate text-center text-3xl font-medium">
                           {album.title}
                         </p>
                       </div>
@@ -284,15 +298,7 @@ export default function ResultsCard({
                 })}
               </div>
 
-              <div ref={tauRef} className="mt-6 flex flex-col items-center gap-2">
-                <p className="text-xs text-white/30">ranked all {ranked.length}</p>
-                <p className="text-sm text-white/40">
-                  Kendall&rsquo;s τ vs critics: {tau.toFixed(2)}
-                </p>
-                <p className="text-2xl font-bold">{verdictText}</p>
-              </div>
-
-              <footer ref={footerRef} className="mt-6 text-center text-lg text-white/30">
+              <footer ref={footerRef} className="mt-6 text-center text-xl text-white/35">
                 {year}
               </footer>
             </div>
