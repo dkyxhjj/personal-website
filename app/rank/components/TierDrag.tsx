@@ -97,11 +97,9 @@ function AlbumRow({
 }
 
 function seedOrder(albums: Album[], ratings: Record<string, number>): Album[] {
-  return [...albums].sort((a, b) => {
-    const ratingDiff = (ratings[b.id] ?? 0) - (ratings[a.id] ?? 0);
-    if (ratingDiff !== 0) return ratingDiff;
-    return a.year - b.year;
-  });
+  // Stable sort: ties (equal ratings) keep the input array's order, which by the
+  // time this runs already reflects each album's binary-search-resolved position.
+  return [...albums].sort((a, b) => (ratings[b.id] ?? 0) - (ratings[a.id] ?? 0));
 }
 
 export default function TierDrag({
@@ -194,7 +192,7 @@ export default function TierDrag({
     // the rail is a fixed bottom bar below the 899px breakpoint and overlays the viewport.
     <div className="flex h-dvh w-full flex-col gap-3 overflow-hidden bg-transparent px-6 py-5 text-white max-[899px]:h-[calc(100dvh_-_67px_-_env(safe-area-inset-bottom))]">
       <div className="shrink-0 text-center">
-        <h1 className="font-[family-name:var(--font-display)] text-xl sm:text-2xl">Drag to break ties</h1>
+        <h1 className="font-[family-name:var(--font-display)] text-xl sm:text-2xl">Your ranking</h1>
         <p className="mt-1 hidden font-[family-name:var(--font-mono)] text-[11px] tracking-widest text-white/30 sm:block">
           REORDER WITHIN EACH RATING BAND
         </p>

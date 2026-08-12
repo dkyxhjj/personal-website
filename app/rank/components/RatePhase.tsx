@@ -75,9 +75,17 @@ function ScoreButton({
 export default function RatePhase({
   albums,
   onComplete,
+  onRate,
+  paused = false,
+  resumeToken,
 }: {
   albums: Album[];
   onComplete: (ratings: Record<string, number>) => void;
+  // Fired per rating; return true to advance immediately, false to hold position
+  // (e.g. a comparison needs to be resolved first) until resumeToken changes.
+  onRate?: (albumId: string, score: number) => boolean;
+  paused?: boolean;
+  resumeToken?: number;
 }) {
   const [ordered] = useState(() => [...albums].sort((a, b) => b.year - a.year));
   const [index, setIndex] = useState(0);
@@ -106,16 +114,36 @@ export default function RatePhase({
 
   const current = ordered[index];
 
-  const handleRate = (score: number) => {
-    if (!current) return;
-    const next = { ...ratings, [current.id]: score };
-    setRatings(next);
+  const advance = (ratingsSnapshot: Record<string, number>) => {
     if (index + 1 >= ordered.length) {
-      onComplete(next);
+      onComplete(ratingsSnapshot);
     } else {
       setIndex(index + 1);
     }
   };
+
+  const handleRate = (score: number) => {
+    if (!current || paused) return;
+    const next = { ...ratings, [current.id]: score };
+    setRatings(next);
+    const shouldAdvance = onRate ? onRate(current.id, score) : true;
+    if (shouldAdvance) {
+      advance(next);
+    }
+  };
+
+  // Resumes advancing once a rating that held off (onRate returned false, e.g. a
+  // comparison needs resolving) has been fully settled by the parent. Skips the
+  // mount-triggered run so it only fires on a real resumeToken change.
+  const skipNextResumeRef = useRef(true);
+  useEffect(() => {
+    if (skipNextResumeRef.current) {
+      skipNextResumeRef.current = false;
+      return;
+    }
+    advance(ratings);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [resumeToken]);
 
   // Purely presentational: spawns the fly-out overlay and haptic, then defers to the
   // unchanged handleRate above. Never awaits anything, so the next album's entrance is
@@ -137,6 +165,7 @@ export default function RatePhase({
   // always closes over the current album/index instead of a stale one.
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
+      if (paused) return;
       if (e.key === "-") {
         handleRate(10);
       } else if (e.key >= "0" && e.key <= "9") {

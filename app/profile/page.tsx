@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Marquee } from "@/components/ui/marquee";
-import GradientCards, { type CardItem } from "../components/GradientCards";
+import ProjectCards from "../components/ProjectCards";
+import Playlist from "../components/Playlist";
 
 export const metadata: Metadata = {
   title: "Profile",
@@ -112,16 +113,6 @@ const elsewhere = [
 ];
 
 export default function Profile() {
-  const projectCards: CardItem[] = projects.map((project) => ({
-    key: project.title,
-    eyebrow: project.award ?? undefined,
-    eyebrowAccent: true,
-    title: project.title,
-    titleHref: project.href,
-    description: project.description,
-    tags: project.tags,
-  }));
-
   return (
     <div className="page">
       <span className="mono-label eyebrow">Profile</span>
@@ -268,7 +259,7 @@ export default function Profile() {
 
       <section className="section">
         <h2>Projects</h2>
-        <GradientCards items={projectCards} />
+        <ProjectCards items={projects} />
       </section>
 
       <section className="section">
@@ -283,6 +274,8 @@ export default function Profile() {
           </Marquee>
         </div>
       </section>
+
+      <Playlist />
 
       <section className="section">
         <h2>Elsewhere</h2>
