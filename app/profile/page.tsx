@@ -60,7 +60,7 @@ const projects = [
   {
     title: "Embers",
     href: "https://devpost.com/software/insurefire",
-    award: "1st Place · LAHacks 2025",
+    award: "Best Use of Gemini · LAHacks 2025",
     description:
       "Insurance valuation tool that turns 2-minute home walkthroughs into detailed inventory reports with YOLOv11 + Gemini 2.5.",
     tags: ["YOLOv11", "Gemini 2.5", "Python"],
@@ -124,6 +124,41 @@ export default function Profile() {
         that get out of the way.
       </p>
 
+      <a
+        href="/resume.pdf"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="resume-btn mono-label"
+      >
+        Résumé ↗
+      </a>
+
+      <section className="section">
+        <h2>Education</h2>
+        <ul className="fact-list mono">
+          <li>
+            <span>Degree</span>
+            <span style={{ textAlign: "right", color: "var(--text)" }}>
+              B.S. Statistics &amp; Data Science, UCLA
+            </span>
+          </li>
+          <li>
+            <span>Minors</span>
+            <span style={{ textAlign: "right", color: "var(--text)" }}>
+              Mathematics, Data Science Engineering
+            </span>
+          </li>
+          <li>
+            <span>GPA</span>
+            <span style={{ textAlign: "right", color: "var(--text)" }}>3.95</span>
+          </li>
+          <li>
+            <span>Graduating</span>
+            <span style={{ textAlign: "right", color: "var(--text)" }}>June 2028</span>
+          </li>
+        </ul>
+      </section>
+
       <section className="section">
         <h2>Now &amp; Before</h2>
         <style>{`
@@ -154,7 +189,7 @@ export default function Profile() {
           <li className="now-before-row">
             <span className="mono-label now-before-label">Now</span>
             <p className="now-before-copy" style={{ margin: 0 }}>
-              Finishing my degree at UCLA this year, splitting most days
+              Third year at UCLA, graduating June 2028, splitting most days
               between STATS 102B problem sets and two LeetCode questions
               before lecture. Saturdays are for testing a new Westwood cafe
               and updating my poker equity spreadsheet.
