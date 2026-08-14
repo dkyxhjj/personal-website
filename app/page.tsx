@@ -1,5 +1,6 @@
 import Link from "next/link";
 import DiagonalGrid from "./components/DiagonalGrid";
+import HeroLive from "./components/HeroLive";
 
 const facts = [
   ["Studying", "B.S. Statistics & Data Science, UCLA"],
@@ -12,6 +13,7 @@ export default function Home() {
   return (
     <div className="page">
       <DiagonalGrid />
+      <HeroLive />
       <span className="mono-label eyebrow">Richard Li — Statistics & Data Science</span>
       <h1>
         I build software the way I study probability — carefully, and with a bias
@@ -30,6 +32,7 @@ export default function Home() {
           More about me »
         </Link>
       </p>
+
       <ul className="fact-list mono">
         {facts.map(([k, v]) => (
           <li key={k}>

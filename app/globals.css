@@ -248,6 +248,65 @@ a {
   background: var(--bg-raise);
 }
 
+/* ---- Hero-live module (homepage clock + Spotify) ---- */
+/* One compact row: clock value, tiny album art, and track name all read at
+   roughly the same small scale, with both labels sharing a single line above. */
+.hero-live {
+  margin: 0 0 2.8rem;
+  padding-bottom: 1.6rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.hero-live-label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: var(--muted);
+}
+
+.hero-live-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.hero-live-value {
+  font-family: var(--font-display), Georgia, serif;
+  font-weight: 400;
+  font-size: 1.35rem;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+  color: var(--text);
+  max-width: 28ch;
+  overflow-wrap: break-word;
+}
+
+a.hero-live-track {
+  border-bottom: 1px solid transparent;
+  transition: color 0.18s ease, border-color 0.18s ease;
+}
+
+a.hero-live-track:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+/* tiny thumbnail, matched to the row's text line-height rather than a
+   standalone visual element */
+.hero-live-mini-art {
+  position: relative;
+  flex: 0 0 auto;
+  width: 30px;
+  aspect-ratio: 1 / 1;
+  border-radius: 3px;
+  overflow: hidden;
+  background: var(--bg-raise);
+}
+
+.hero-live-mini-art img {
+  object-fit: cover;
+}
+
 .section {
   margin-top: 2.8rem;
 }
@@ -276,6 +335,81 @@ a {
 
 .fact-list li a:hover {
   color: var(--accent);
+}
+
+/* three-bar equalizer inside the hero-live module: animated + accent while a
+   track is actively playing, frozen + muted for the "Last played" state. */
+.eq {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 16px;
+}
+
+.eq-bar {
+  width: 2px;
+  height: 100%;
+  background: var(--accent);
+  transform-origin: bottom;
+  animation: eq-bounce 0.9s ease-in-out infinite;
+}
+
+.eq-bar:nth-child(1) {
+  animation-delay: -0.6s;
+}
+
+.eq-bar:nth-child(2) {
+  animation-delay: -0.3s;
+}
+
+.eq-bar:nth-child(3) {
+  animation-delay: 0s;
+}
+
+@keyframes eq-bounce {
+  0%,
+  100% {
+    transform: scaleY(0.3);
+  }
+  50% {
+    transform: scaleY(1);
+  }
+}
+
+/* not-playing fallback: static bars, muted color, no motion */
+.eq[data-playing="false"] .eq-bar {
+  background: var(--muted);
+  animation: none;
+}
+
+.eq[data-playing="false"] .eq-bar:nth-child(1) {
+  transform: scaleY(0.4);
+}
+
+.eq[data-playing="false"] .eq-bar:nth-child(2) {
+  transform: scaleY(0.85);
+}
+
+.eq[data-playing="false"] .eq-bar:nth-child(3) {
+  transform: scaleY(0.6);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .eq-bar {
+    animation: none;
+  }
+
+  .eq-bar:nth-child(1) {
+    transform: scaleY(0.4);
+  }
+
+  .eq-bar:nth-child(2) {
+    transform: scaleY(0.85);
+  }
+
+  .eq-bar:nth-child(3) {
+    transform: scaleY(0.6);
+  }
 }
 
 /* blog post list */
