@@ -57,7 +57,12 @@ async function getAccessToken(): Promise<string | null> {
   const clientId = process.env.SPOTIFY_CLIENT_ID;
   const clientSecret = process.env.SPOTIFY_CLIENT_SECRET;
   const refreshToken = process.env.SPOTIFY_REFRESH_TOKEN;
-  if (!clientId || !clientSecret || !refreshToken) return null;
+  if (!clientId || !clientSecret || !refreshToken) {
+    console.error(
+      `Spotify env vars missing: clientId=${!!clientId} clientSecret=${!!clientSecret} refreshToken=${!!refreshToken}`,
+    );
+    return null;
+  }
 
   const basic = Buffer.from(`${clientId}:${clientSecret}`).toString("base64");
   const res = await fetch(TOKEN_URL, {
@@ -73,7 +78,10 @@ async function getAccessToken(): Promise<string | null> {
     cache: "no-store",
   });
 
-  if (!res.ok) return null;
+  if (!res.ok) {
+    console.error(`Spotify token exchange failed: ${res.status} ${await res.text()}`);
+    return null;
+  }
 
   const data = (await res.json()) as TokenResponse;
   cachedAccessToken = data.access_token;
