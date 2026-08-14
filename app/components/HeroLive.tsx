@@ -111,7 +111,7 @@ export default function HeroLive() {
   }, []);
 
   const hasTrack = Boolean(track && track.title && track.artist);
-  const trackLabel = track?.isPlaying ? "Listening to" : "Last played";
+  const trackLabel = track?.isPlaying ? "Listening live to" : "Last played";
 
   return (
     <section className="hero-live">
