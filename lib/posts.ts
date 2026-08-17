@@ -24,6 +24,97 @@ export type Post = {
 
 export const posts: Post[] = [
   {
+    slug: "memory-lane-parsing-24000-imessages",
+    title: "Memory Lane, by Trial and Error: Parsing 24,000 iMessages",
+    date: "2026-08-16",
+    excerpt:
+      "Five people, 24,000 messages, and a chat.db file that fights you at every step — on timestamps, on where the text even lives, and on what counts as a message at all.",
+    content: [
+      {
+        type: "subtitle",
+        text: "What five people's group chat looks like once you stop scrolling it and start querying it.",
+      },
+      {
+        type: "p",
+        text: "Every so often I get the urge to point a model at something that isn't a spreadsheet of public data. This time it was my toronto group chat. We migrated it to imsg just recently from instagram starting in june so the numbers are a bit skewed, but it's still a decent sample size. It's sitting in a SQLite file on my own laptop the whole time.",
+      },
+      {
+        type: "p",
+        text: "~/Library/Messages/chat.db. No API, no rate limit, no auth flow. Just a database Apple has been quietly writing to since the day I set up iMessage. I opened it expecting a SELECT * FROM messages afternoon project. It was not that.",
+      },
+      {
+        type: "image",
+        src: "/blogs/2/4.png",
+        alt: "Bar chart, Message Count per Person: Me 3659, rz 1833, bt 1902, jin 2618, jess 194.",
+        width: 2034,
+        height: 1282,
+        caption:
+          "The imbalance you already knew was there, now with a denominator. Five people, 24,000 messages total across every thread in the export, and this one group's split alone spans a 19x range top to bottom.",
+      },
+      { type: "h2", text: "The text isn't where you think it is" },
+      {
+        type: "p",
+        text: "First trap: SELECT text FROM message returns NULL for a huge chunk of recent rows. The column isn't gone, it's just not where iMessage puts text anymore. Since a macOS update years back, message bodies live inside attributedBody, an NSKeyedArchiver-serialized blob, because a chat bubble apparently needed to remember its own font. Getting a plain string back out means unarchiving a binary plist and walking the object graph for the NSString payload. The text column still works for old messages and reactions; everything else needed the blob path.",
+      },
+      { type: "h2", text: "Timestamps lie if you assume Unix epoch" },
+      {
+        type: "p",
+        text: "Second trap, and the one that cost the most time: date in the messages table isn't Unix time. It's nanoseconds since January 1, 2001, Apple's Core Data epoch, and for a while my hourly activity numbers were shifted so hard that everyone appeared to text most heavily sometime around 2001. Once corrected, the pattern actually made sense.",
+      },
+      {
+        type: "image",
+        src: "/blogs/2/3.png",
+        alt: "Heatmap of message activity by hour of day for each of the five people, showing an evening peak.",
+        width: 2154,
+        height: 914,
+        caption:
+          "Me at a clean peak around 6–7pm, jin right behind, jess barely registering outside a narrow afternoon band. Nobody in this chat is texting at 3am. We're boring that way.",
+      },
+      { type: "h2", text: "A reaction is a message pretending to be a reply" },
+      {
+        type: "p",
+        text: "Tapbacks (heart, thumbs up, double exclamation) aren't in a separate table either. They're rows in the same message table, linked to the original via associated_message_guid, prefixed with a type code that tells you whether it's a love, a laugh, or a removed reaction undoing an earlier one. Skip filtering these out and every count in this post, message totals, word counts, everything, quietly inflates.",
+      },
+      { type: "h2", text: "Once the data's honest, the fun stats show up" },
+      {
+        type: "p",
+        text: "With text decoded, timestamps fixed, and reactions separated from real messages, the rest was just counting things properly.",
+      },
+      {
+        type: "image",
+        src: "/blogs/2/2.png",
+        alt: "Bar chart, Conversation Starters, first message after a 4 hour or more gap: Me 29, rz 7, bt 8, jin 33, jess 5.",
+        width: 2052,
+        height: 1284,
+        caption:
+          "jin opens the chat back up more than anyone (33 times), followed closely by me (29). rz, bt, and jess mostly wait to be texted first.",
+      },
+      {
+        type: "image",
+        src: "/blogs/2/1.png",
+        alt: "Two bar charts side by side: Distinct Words Used per Person, and Vocabulary Richness as distinct over total words, for each of the five people.",
+        width: 2204,
+        height: 852,
+        caption:
+          "I've sent the most messages and the most distinct words in absolute terms, but the lowest type-token ratio in the group (0.159), I say a lot, but I repeat myself doing it. jess, at the other end, has the smallest vocabulary in raw count but the highest richness (0.452): fewer messages, less repetition per message.",
+      },
+      {
+        type: "image",
+        src: "/blogs/2/namedrop.png",
+        alt: "Bar chart, Name Drops per Person, split by mentions from others versus mentions by self.",
+        width: 1216,
+        height: 670,
+        caption:
+          "bt is talked about more than anyone else in the chat (323 mentions) despite not being the most frequent texter. Self-mentions are near zero across the board, nobody in this group refers to themselves by name, which in hindsight is just how texting works.",
+      },
+      {
+        type: "p",
+        muted: true,
+        text: "Parsed directly from chat.db via sqlite3 in Python; text extracted from attributedBody where the plain text column was empty, timestamps converted from Apple's Core Data epoch, and reactions filtered out via associated_message_guid before counting.",
+      },
+    ],
+  },
+  {
     slug: "i-built-a-model-to-beat-baseball",
     title: "I Built a Model to Beat Baseball. It Taught Me Why I Couldn't.",
     date: "2026-07-28",
@@ -49,7 +140,7 @@ export const posts: Post[] = [
       },
       {
         type: "image",
-        src: "/gameview.png",
+        src: "/blogs/1/gameview.png",
         alt: "The dashboard's slate view: a list of the day's games, each with a projected score, a projected total with a plus-or-minus, and a small distribution shape.",
         width: 2940,
         height: 1604,
@@ -80,7 +171,7 @@ export const posts: Post[] = [
       },
       {
         type: "image",
-        src: "/prediction.png",
+        src: "/blogs/1/prediction.png",
         alt: "Total runs distribution for Phillies at Marlins: a right-skewed curve peaking around 6-7 runs, with P(total >= 7) = 60%, P(>= 8) = 50%, P(>= 9) = 40%, P(>= 10) = 32%, P(>= 11) = 25%. Win probability PHI 58% / MIA 42%.",
         width: 1802,
         height: 1476,
@@ -114,7 +205,7 @@ export const posts: Post[] = [
       },
       {
         type: "image",
-        src: "/model.png",
+        src: "/blogs/1/model.png",
         alt: "The deployed model's coefficients: intercept 1.29, log(offense) 1.14, starter 0.90, bullpen 1.21, park 0.81, home 0.002, dispersion k=3.53, trained on 14,544 team-games from 2023-25.",
         width: 1600,
         height: 1178,
@@ -153,7 +244,7 @@ export const posts: Post[] = [
       },
       {
         type: "image",
-        src: "/calibration.png",
+        src: "/blogs/1/calibration.png",
         alt: "Calibration plot: predicted probability of a total over 8.5 runs against the observed frequency, across ten deciles of the 2026 holdout, tracking the 45-degree diagonal within sampling noise.",
         width: 1200,
         height: 750,
