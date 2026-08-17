@@ -58,7 +58,18 @@ export default function HeroLive() {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setNow(formatClock(new Date()));
     const id = setInterval(() => setNow(formatClock(new Date())), 60_000);
-    return () => clearInterval(id);
+
+    // Background/inactive tabs throttle or pause setInterval (especially on
+    // mobile), so the clock can go stale while hidden. Re-sync on return.
+    function handleVisibility() {
+      if (!document.hidden) setNow(formatClock(new Date()));
+    }
+    document.addEventListener("visibilitychange", handleVisibility);
+
+    return () => {
+      clearInterval(id);
+      document.removeEventListener("visibilitychange", handleVisibility);
+    };
   }, []);
 
   const [track, setTrack] = useState<SpotifyState | null>(null);
