@@ -57,18 +57,38 @@ export default function HeroLive() {
     // immediately on mount instead of waiting up to a minute for the first tick.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setNow(formatClock(new Date()));
-    const id = setInterval(() => setNow(formatClock(new Date())), 60_000);
 
-    // Background/inactive tabs throttle or pause setInterval (especially on
-    // mobile), so the clock can go stale while hidden. Re-sync on return.
+    // A plain setInterval(60_000) ticks 60s after mount time, not on the
+    // real minute boundary, so the display can lag up to 59s behind. Align
+    // the first tick to the next minute boundary, then run every 60s from
+    // there.
+    let intervalId: ReturnType<typeof setInterval> | null = null;
+    const msIntoMinute = Date.now() % 60_000;
+    const timeoutId = setTimeout(() => {
+      setNow(formatClock(new Date()));
+      intervalId = setInterval(() => setNow(formatClock(new Date())), 60_000);
+    }, 60_000 - msIntoMinute);
+
+    // Background/inactive tabs throttle or pause timers (especially on
+    // mobile), so the clock can go stale while hidden. visibilitychange
+    // alone misses iOS Safari bfcache restores (swiping back/forward, or
+    // returning from another app), so also resync on pageshow and focus.
+    function resync() {
+      setNow(formatClock(new Date()));
+    }
     function handleVisibility() {
-      if (!document.hidden) setNow(formatClock(new Date()));
+      if (!document.hidden) resync();
     }
     document.addEventListener("visibilitychange", handleVisibility);
+    window.addEventListener("pageshow", resync);
+    window.addEventListener("focus", resync);
 
     return () => {
-      clearInterval(id);
+      clearTimeout(timeoutId);
+      if (intervalId) clearInterval(intervalId);
       document.removeEventListener("visibilitychange", handleVisibility);
+      window.removeEventListener("pageshow", resync);
+      window.removeEventListener("focus", resync);
     };
   }, []);
 
