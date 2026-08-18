@@ -51,30 +51,63 @@ export default function HeroLive() {
   const [now, setNow] = useState(() => formatClock(new Date()));
 
   useEffect(() => {
+    let cancelled = false;
+    let intervalId: ReturnType<typeof setInterval> | null = null;
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
+
+    // The visitor's system clock isn't guaranteed to be right — offsetMs is
+    // the correction pulled from the server's own (NTP-synced) clock.
+    // correctedNow() applies it on every read instead of trusting Date().
+    let offsetMs = 0;
+    function correctedNow() {
+      return new Date(Date.now() + offsetMs);
+    }
+
     // The homepage is statically prerendered, so the lazy initial state above
     // can be stale by the time a visitor loads it. suppressHydrationWarning
     // on the span lets React skip past that mismatch; this corrects it
     // immediately on mount instead of waiting up to a minute for the first tick.
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    setNow(formatClock(new Date()));
+    setNow(formatClock(correctedNow()));
 
     // A plain setInterval(60_000) ticks 60s after mount time, not on the
     // real minute boundary, so the display can lag up to 59s behind. Align
     // the first tick to the next minute boundary, then run every 60s from
-    // there.
-    let intervalId: ReturnType<typeof setInterval> | null = null;
-    const msIntoMinute = Date.now() % 60_000;
-    const timeoutId = setTimeout(() => {
-      setNow(formatClock(new Date()));
-      intervalId = setInterval(() => setNow(formatClock(new Date())), 60_000);
-    }, 60_000 - msIntoMinute);
+    // there. Re-run after each server sync since the offset can shift the
+    // boundary.
+    function scheduleAligned() {
+      if (timeoutId) clearTimeout(timeoutId);
+      if (intervalId) clearInterval(intervalId);
+      const msIntoMinute = correctedNow().getTime() % 60_000;
+      timeoutId = setTimeout(() => {
+        setNow(formatClock(correctedNow()));
+        intervalId = setInterval(() => setNow(formatClock(correctedNow())), 60_000);
+      }, 60_000 - msIntoMinute);
+    }
+    scheduleAligned();
+
+    async function syncWithServer() {
+      try {
+        const res = await fetch("/api/time", { cache: "no-store" });
+        if (!res.ok) return;
+        const { time } = (await res.json()) as { time: string };
+        if (cancelled) return;
+        offsetMs = new Date(time).getTime() - Date.now();
+        setNow(formatClock(correctedNow()));
+        scheduleAligned();
+      } catch {
+        // Fall back to the client's own clock — still right most of the time.
+      }
+    }
+    syncWithServer();
 
     // Background/inactive tabs throttle or pause timers (especially on
     // mobile), so the clock can go stale while hidden. visibilitychange
     // alone misses iOS Safari bfcache restores (swiping back/forward, or
     // returning from another app), so also resync on pageshow and focus.
     function resync() {
-      setNow(formatClock(new Date()));
+      setNow(formatClock(correctedNow()));
+      syncWithServer();
     }
     function handleVisibility() {
       if (!document.hidden) resync();
@@ -84,7 +117,8 @@ export default function HeroLive() {
     window.addEventListener("focus", resync);
 
     return () => {
-      clearTimeout(timeoutId);
+      cancelled = true;
+      if (timeoutId) clearTimeout(timeoutId);
       if (intervalId) clearInterval(intervalId);
       document.removeEventListener("visibilitychange", handleVisibility);
       window.removeEventListener("pageshow", resync);
