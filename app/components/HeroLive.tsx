@@ -48,7 +48,7 @@ function EqBars({ playing }: { playing: boolean }) {
 }
 
 export default function HeroLive() {
-  const [now, setNow] = useState(() => formatClock(new Date()));
+  const [now, setNow] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -186,7 +186,7 @@ export default function HeroLive() {
       </span>
       <div className="hero-live-row">
         <span className="hero-live-value" suppressHydrationWarning>
-          {now}
+          {now ?? " "}
         </span>
 
         {hasTrack && track && (

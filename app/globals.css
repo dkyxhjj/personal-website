@@ -281,6 +281,11 @@ a {
   overflow-wrap: break-word;
 }
 
+.hero-live-value:first-child {
+  display: inline-block;
+  min-width: 12ch;
+}
+
 a.hero-live-track {
   border-bottom: 1px solid transparent;
   transition: color 0.18s ease, border-color 0.18s ease;
